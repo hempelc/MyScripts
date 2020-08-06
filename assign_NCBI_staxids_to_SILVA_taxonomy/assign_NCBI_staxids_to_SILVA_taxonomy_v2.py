@@ -7,14 +7,14 @@
 # Now, synonym names are only used if no match to an scientifc name is found
 
 
-# Usage: ./SILVA_taxonomy_to_NCBI_staxids_v2.py NCBI_staxids_scientific_file NCBI_staxids_non_scientific_file SILVA_taxonomy_file output_file_name
+# Usage: ./assign_NCBI_staxids_to_SILVA_taxonomy_v2.py NCBI_staxids_scientific_file NCBI_staxids_non_scientific_file SILVA_taxonomy_file output_file_name
 
 # Merges SILVA taxonomy paths with NCBI staxids
 
 # SILVA taxonomy file needs to have two columns, first one with accession number and second one with taxonomy path
 	# Get SILVA taxonomy file from https://www.arb-silva.de/fileadmin/silva_databases/current/Exports/taxonomy/taxmap_slv_ssu_ref_nr_138.txt.gz
 	# Unzip and edit SILVA taxonomy file:
-		# sed "s/ <[a-zA-Z -,.&:'0-9]*>//g" taxmap_slv_ssu_ref_nr_138.txt | tail -n +2 | sed -r 's/(.*)\t/\1/g' | cut -f 1,4 > taxmap_slv_ssu_ref_nr_138_edited_for_NCBI_staxid_script.txt
+		# sed "s/ <[a-zA-Z -,.&:'0-9]*>//g" taxmap_slv_ssu_ref_nr_138.txt | tail -n +2 | sed 's/;\t/;/g' | cut -f 1,4 > taxmap_slv_ssu_ref_nr_138_edited_for_NCBI_staxid_script.txt
 			# 1. removes <genus>, <family> etc. from taxonomic paths (otherwise the SILVA taxonomy won't match the NCBI taxonomy)
 			# 2. removes header line (not needed)
 			# 3. removes the last tab of each line so that taxonomy path is in one column
@@ -31,7 +31,7 @@
 			# 5. Removes lines containing "environmental", "uncultured", "unidentified", and "metagenome"
 				# Needed because
 					# SILVA taxonomy can have the same taxonomic ranks (e.g., "environmental sample") for different higher ranks (e.g., "nematode; environmental sample" and "bacteria;environmental sample"), wich would, however, be assigned to the same staxid because the lower rank "environmental sample" is similar
-					# NCBI taxonomy can different staxids for the same taxonomic name, which will cause issue when matching
+					# NCBI taxonomy can have different staxids for the same taxonomic name, which will cause issue when matching
 		# We match SILVA taxonomy against this file (against scientific names) first
 	# Edit names.dmp file into a file only containing non-scientific names
 		# sed "s/ <[a-zA-Z -,.&:'0-9]*>//g" names.dmp | grep -v 'scientific name' | cut -f 1,3 | awk -F $'\t' ' { t = $1; $1 = $2; $2 = t; print; } ' OFS=$'\t' | grep -v 'environmental' | grep -v 'uncultured' | grep -v 'unidentified' | grep -v 'metagenome' > NCBI_staxids_non_scientific.txt

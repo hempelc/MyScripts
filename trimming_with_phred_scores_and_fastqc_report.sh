@@ -11,7 +11,7 @@
 # and called "adapters" (that's usually the case when you install trimmomatic)
 
 # For some reason, the limit of the PHRED score can only be set to 38, FastQC is not able to deal with data
-# generated with higher PHRED scores (in my training dataset)
+# generated with higher PHRED scores (in my test dataset)
 
 usage="$(basename "$0") -T <path/to/trimmomatic.jar> -1 <R1.fastq> -2 <R2.fastq> [-P <'score score score ...'>] [-l <length>] [-t <threads>]
 

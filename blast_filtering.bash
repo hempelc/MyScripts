@@ -134,7 +134,7 @@ if [[ $type == 'soft' ]] ; then
 
   # Sort files
   mkdir intermediate_files/
-  mv blast_output*.txt intermediate_files/
+  mv blast_output.txt blast_output_with_taxonomy.txt intermediate_files/
 fi
 
 if [[ $type == 'strict' ]] ; then
@@ -209,43 +209,28 @@ if [[ $type == 'strict' ]] ; then
     >> blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt
   done
 
-  #echo -e "\n======== ADDING ORIGINAL SEQUENCE NAMES BY MERGING========"
-  # Add sequence info from .fasta file in one column
-  #grep '>' ../$sequences | sed 's/>//g' > name_info.txt
-  #mergeFilesOnColumn.pl name_info.txt \
-  #blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
-  #1 1 > tmp && mv tmp \
-  #blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt
-
   # Adding header and rearranging columns
-  #cut -f 2- blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
-  #| awk 'BEGIN {FS="\t"; OFS="\t"} {print $2, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $3, $1}' \
-  #> tmp
   awk 'BEGIN {FS="\t"; OFS="\t"} {print $1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $2}' \
   blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
   > tmp
-  #| awk 'BEGIN {FS="\t"; OFS="\t"} {print $2, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $3, $1}' \
-  #echo -e "sequence\tsuperkingdom\tkingdom\tphylum\tsubphylum\tclass\tsubclass\torder\tsuborder\tinfraorder\tfamily\tgenus\tspecies\tsize" \
   echo -e "sequence\tsuperkingdom\tkingdom\tphylum\tsubphylum\tclass\tsubclass\torder\tsuborder\tinfraorder\tfamily\tgenus\tspecies" \
   > blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt \
   && cat tmp \
   >> blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt
   rm blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
   tmp
-  #rm blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
-  #mp name_info.txt
-
+  # Sort files
+  mkdir intermediate_files/
+  mv $(\ls -1 . \
+  | grep -v blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt) \
+  intermediate_files/
+fi
 
 # Display runtime
 echo -e "=================================================================\n"
 echo "SCRIPT DONE AFTER $((($(date +%s)-$start)/3600))h $(((($(date +%s)-$start)%3600)/60))m"
 
-# Sort files
-mkdir ../intermediate_files/
-mv $(\ls -1 . \
-| grep -v blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt) \
-../intermediate_files/
-fi
+
 
 
 # Create log

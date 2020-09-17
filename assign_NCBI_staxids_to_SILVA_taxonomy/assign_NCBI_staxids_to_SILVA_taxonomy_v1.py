@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Version 1.0, made on 3rd Apr 2020 by Chris Hempel (hempelc@uoguelph.ca)
+# Version 0.1, made on 3rd Apr 2020 by Chris Hempel (hempelc@uoguelph.ca)
 
 # Usage: ./SILVA_to_NCBI_taxonomy.py NCBI_staxids_file SILVA_taxonomy_file output_file_name
 

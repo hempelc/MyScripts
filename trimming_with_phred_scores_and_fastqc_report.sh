@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Version 1.0, made on 31 Mar 2020 by Chris Hempel (hempelc@uoguelph.ca)
+# Version 0.1, made on 31 Mar 2020 by Chris Hempel (hempelc@uoguelph.ca)
 
 # Takes R1 and R2 reads, performs FastQC on the raw reads, then trims them using Trimmomatic
 # with a list of PHRED scores and performs FastQC on all trimmed read sets

@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-# Version 2.0, made on 7rd Apr 2020 by Chris Hempel (hempelc@uoguelph.ca)
+# Version 0.2, made on 7rd Apr 2020 by Chris Hempel (hempelc@uoguelph.ca)
 
-# Change to v 1.0: now uses NCBI staxids with only scientific names first, and then NCBI staxids with synonyms, misspellings, etc.
+# Change to v 0.1: now uses NCBI staxids with only scientific names first, and then NCBI staxids with synonyms, misspellings, etc.
 # That was needed because some scientific names of one species overlapped with synonym names of another species, which then overwrote the scientific name
 # Now, synonym names are only used if no match to an scientifc name is found
 

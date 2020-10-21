@@ -169,5 +169,9 @@ SILVA_138.1_LSURef_NR99_tax_silva_trunc.fasta \
 rm citations.dmp delnodes.dmp readme.txt SILVA_138.1_SSURef_NR99_tax_silva_trunc* \
 SILVA_138.1_LSURef_NR99_tax_silva_trunc.fasta division.dmp gc.prt gencode.dmp \
 SILVA_accession_numbers_and_NCBI_taxids.txt merged.dmp tax* names.dmp \
+<<<<<<< HEAD
+NCBI_staxids_* nodes.dmp
+=======
 nodes.dmp
 #NCBI_staxids_* nodes.dmp
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd

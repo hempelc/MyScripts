@@ -1,8 +1,6 @@
 #!/bin/bash
-# Usage: deinterleave_fastq_reads.sh < interleaved.fastq f.fastq r.fastq [compress]
-#
-# Made by Nathan S. Watson-Haigh (https://gist.github.com/nathanhaigh/3521724)
-#
+# Usage: deinterleave_fastq.sh < interleaved.fastq f.fastq r.fastq [compress]
+# 
 # Deinterleaves a FASTQ file of paired reads into two FASTQ
 # files specified on the command line. Optionally GZip compresses the output
 # FASTQ files using pigz if the 3rd command line argument is the word "compress"

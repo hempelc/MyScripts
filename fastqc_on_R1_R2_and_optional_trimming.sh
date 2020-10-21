@@ -3,17 +3,31 @@
 # Version 0.2, made on 27 Aug 2020 by Chris Hempel (hempelc@uoguelph.ca)
 
 # Takes R1 and R2 reads, performs FastQC on the raw reads, then, if specified,
+<<<<<<< HEAD
+# trims them using Trimmomatic with a list of PHRED scores and performs FastQC
+=======
 # trims them using Trimmomatic # with a list of PHRED scores and performs FastQC
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 # on all trimmed read sets
 
 # FastQC must be installed and in path
 
+<<<<<<< HEAD
+# A folder with adapters to trim must be located in the same folder as the
+# trimmomatic .jar application and called "adapters" (that's usually the case
+# when you install trimmomatic).
+# For now, the used adapter sequences are fixed, and can be changed in line 122
+
+# For some reason, the limit of the PHRED score can only be set to 38, FastQC is
+# not able to deal with data generated with higher PHRED scores (in my test).
+=======
 # A folder with adapters to trim must be located in the same folder as the trimmomatic .jar application
 # and called "adapters" (that's usually the case when you install trimmomatic)
 # For now, the used adapter sequences are fixed, and can be changed in line 122
 
 # For some reason, the limit of the PHRED score can only be set to 38, FastQC is not able to deal with data
 # generated with higher PHRED scores (in my test)
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 
 usage="$(basename "$0") -1 <R1.fastq> -2 <R2.fastq> -t <yes|no> [-T <path/to/trimmomatic.jar> -P <'score score score ...'> -l <length> -p <threads>]
 
@@ -27,13 +41,21 @@ Usage:
 	-p  Number of threads used	(default: 16)
 	-h  Display this help and exit"
 
+<<<<<<< HEAD
+# Set default options:
+=======
 # Set default options
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 PHRED='5 10 15 20'
 min_length='25'
 threads='16'
 
 
+<<<<<<< HEAD
+# Set specified options:
+=======
 # Set specified options
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 while getopts ':1:2:t:T:P:l:p:h' opt; do
   case "${opt}" in
   	1) R1="${OPTARG}" ;;
@@ -56,7 +78,11 @@ done
 shift $((OPTIND - 1))
 
 
+<<<<<<< HEAD
+# Check if required options are set:
+=======
 # Check if required options are set
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 if [[ -z "$R1" || -z "$R2" || -z "$trimming" ]]
 then
    echo -e "-1, -2, and -t must be set.\n"
@@ -89,12 +115,20 @@ mkdir trimming_with_phred_scores_and_fastqc_report_output/
 (
 
 
+<<<<<<< HEAD
+# Define starting time of script for total runtime calculation:
+=======
 # Define starting time of script for total runtime calculation
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 start=$(date +%s)
 echo -e "\nSTART RUNNING SCRIPT AT $(date)\n"
 
 
+<<<<<<< HEAD
+# Output specified options:
+=======
 # Output specified options
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 echo -e "~~~~~~~~~~ OPTIONS ~~~~~~~~~~\n"
 
 echo -e "R1 was defined as $R1."
@@ -109,7 +143,11 @@ else
 fi
 echo -e "Number of threads was set to $threads."
 
+<<<<<<< HEAD
+##### Start of script #####
+=======
 ##### Start of script
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 
 baseout=$(echo ${R1%_*}) # Make basename
 
@@ -118,10 +156,21 @@ if [[ $trimming == "yes" ]] ; then
 	echo -e "\n\n~~~~~~~~~~ RUNNING TRIMMOMATIC ~~~~~~~~~~\n"
 	mkdir trimming_with_phred_scores_and_fastqc_report_output/trimmomatic/
 	for score in $PHRED; do
+<<<<<<< HEAD
+		# Run trimmomatic for every specified PHRED score and save output in separate directory
+		mkdir trimming_with_phred_scores_and_fastqc_report_output/trimmomatic/trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/})
+		java -jar $trimmomatic PE $R1 $R2 ILLUMINACLIP:$(echo ${trimmomatic%/*})/adapters/TruSeq3-PE.fa:2:30:10 LEADING:$score TRAILING:$score SLIDINGWINDOW:4:$score MINLEN:$min_length \
+		-baseout trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/}).fastq \
+		-threads $threads
+		echo -e '\n'
+		mv trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/})*.fastq \
+		trimming_with_phred_scores_and_fastqc_report_output/trimmomatic/trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/})
+=======
 		mkdir trimming_with_phred_scores_and_fastqc_report_output/trimmomatic/trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/})
 		java -jar $trimmomatic PE $R1 $R2 ILLUMINACLIP:$(echo ${trimmomatic%/*})/adapters/TruSeq3-PE.fa:2:30:10 LEADING:$score TRAILING:$score SLIDINGWINDOW:4:$score MINLEN:$min_length -baseout trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/}).fastq -threads $threads
 		echo -e '\n'
 		mv trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/})*.fastq trimming_with_phred_scores_and_fastqc_report_output/trimmomatic/trimmed_at_phred_$(echo $score)_$(echo ${baseout##*/})
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 	done
 fi
 
@@ -134,6 +183,10 @@ echo -e "\n"
 fastqc $R2 -o trimming_with_phred_scores_and_fastqc_report_output/fastqc_reports/untrimmed_${baseout##*/}
 echo -e "\n"
 
+<<<<<<< HEAD
+#  Run FastQC on trimmed data if trimming was activated:
+=======
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 if [[ $trimming == "yes" ]] ; then
 	for reads in trimming_with_phred_scores_and_fastqc_report_output/trimmomatic/trimmed_at_phred_*$(echo ${baseout##*/})/*_1P.fastq; do
 		dir_name=${reads%_*} # making variable so that read names can be used to make directory
@@ -150,7 +203,12 @@ if [[ $trimming == "yes" ]] ; then
 fi
 
 # Display runtime
+<<<<<<< HEAD
+echo -e "=================================================================\n"
+echo "SCRIPT DONE AFTER $((($(date +%s)-$start)/3600))h $(((($(date +%s)-$start)%3600)/60))m"
+=======
 echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nSCRIPT RUNTIME: $((($(date +%s)-$start)/3600))h $(((($(date +%s)-$start)%3600)/60))m"
+>>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 
 
 # Write output to console and log file

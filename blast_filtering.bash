@@ -1,40 +1,29 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 # Version 0.2, made on 13 Jul 2020 by Chris Hempel (hempelc@uoguelph.ca)
 
 # Version change: For option -t soft, if several hits have the same best bitscore
 # for a sequence, they're kept and an LCA approach is applied to them
-=======
-# Version 1.0, made on 13 Jul 2020 by Chris Hempel (hempelc@uoguelph.ca)
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 
 # Script to BLAST .fasta files using Sergio Hleap's justblast python module,
 # add taxonomy to the hits, and filter the hits so that each sequence gets
 # assigned to one taxonomy
 
 # Need to have scripts assign_taxonomy_NCBI_staxids.sh and LookupTaxonDetails3.py
-<<<<<<< HEAD
 # in your PATH, and ete3 and justblast installed (https://pypi.org/project/justblast/)
-=======
-# in your PATH, and justblast installed (https://pypi.org/project/justblast/)
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
+
 # In order for "assign_taxonomy_NCBI_staxids.sh" to work - you MUST have
 # .etetoolkit/taxa.sqlite in your HOME directory - check the ete3 toolkit
 # to see how that's set up (http://etetoolkit.org/)
 
 cmd="$0 $@" # Make variable containing full used command to print command in logfile
-usage="$(basename "$0") -i <input.fa> -f <fasta|blast> -t <soft|strict> [-d <DB> -b <bitscore> -p <percentage> -c <n n n n n n> -T <threads>]
+usage="$(basename "$0") -i <input.fa> -f <fasta|blast> -t <soft|strict> -e <PATH/TO/.etetoolkit/taxa.sqlite> [-d <DB> -b <bitscore> -p <percentage> -c <n n n n n n> -T <threads>]
 
 Usage:
   -i       Input file.
   -f       Format of input file:
            fasta:
-<<<<<<< HEAD
               If input is a fasta file, justblast is performed first, then
-=======
-              If input is a blast file, justblast is performed first, then
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
               results are filtered based on option -t. Requires option -d.
            blast:
               Input is already blast output, then justblast is skipped and input
@@ -43,14 +32,10 @@ Usage:
               gapopen qstart qend sstart send evalue bitscore staxids'
   -t       Type of filtering:
            soft:
-<<<<<<< HEAD
               Keeps the best hit (highest bitscore) for each sequence. If multiple
               hits have the same highest bitscore, an LCA approach is applied
               (assigns the taxonomy to each sequence based on all taxonomic ranks
               that are identical in the remaining hits of each sequence)
-=======
-              Simply keeps the best hit (highest bitscore) for each sequence
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
            strict:
               Performs 3 steps:
               (1) bitscore filtering - keeps all hits with a bitscore >= (-b) and
@@ -61,6 +46,7 @@ Usage:
               (3) LCA approach - assigns the taxonomy to each sequence based on
               all taxonomic ranks that are identical in the remaining hits of
               each sequence.
+  -e       Path to .etetoolkit/taxa.sqlite (usually in home directory)
   -d       Database to use for blast.
   -b       Bitscore threshold to perform bitscore filtering on (-t) strict
            (default=155).
@@ -84,11 +70,12 @@ cutoff='99 97 95 90 85 80'
 threads='16'
 
 # Set specified options
-while getopts ':i:f:d:t:b:p:c:T:h' opt; do
+while getopts ':i:f:e:d:t:b:p:c:T:h' opt; do
  	case "${opt}" in
 		i) input="${OPTARG}" ;;
     f) format="${OPTARG}" ;;
-		d) db="${OPTARG}" ;;
+    e) etetoolkit="${OPTARG}" ;;
+    d) db="${OPTARG}" ;;
 		t) filtering="${OPTARG}" ;;
 		b) bitscore="${OPTARG}" ;;
 		p) percentage="${OPTARG}" ;;
@@ -107,9 +94,9 @@ done
 shift $((OPTIND - 1))
 
 # Check if required options are set
-if [[ -z "$input" || -z "$format" || -z "$filtering" ]]
+if [[ -z "$input" || -z "$format" || -z "$filtering" || -z "$etetoolkit" ]]
 then
-   echo -e "-i, -f, and -t must be set\n"
+   echo -e "-i, -f, -e, and -t must be set\n"
    echo -e "$usage\n\n"
    echo -e "Exiting script\n"
    exit
@@ -118,6 +105,14 @@ fi
 if [[ $filtering != 'soft' && $filtering != 'strict' ]]
 then
   echo -e "Invalid option for -t, must be set to either 'soft' or 'strict'\n"
+  echo -e "$usage\n\n"
+  echo -e "Exiting script\n"
+  exit
+fi
+
+if [[ $format != 'fasta' && $filtering != 'blast' ]]
+then
+  echo -e "Invalid option for -f, must be set to either 'fasta' or 'blast'\n"
   echo -e "$usage\n\n"
   echo -e "Exiting script\n"
   exit
@@ -162,32 +157,23 @@ if [[ $format == 'fasta' ]] ; then
   justblast $input $db --cpus $threads --evalue 1e-05 --outfmt "6 qseqid \
   sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
   staxids" --out_filename blast_filtering_results/blast_output.txt
+  rm -r dask-worker-space/
   assign_taxonomy_input="blast_filtering_results/blast_output.txt"
   echo -e "\n======== JUSTBLAST DONE ========\n"
 else
   assign_taxonomy_input=$input
-<<<<<<< HEAD
 fi
 
 if [[ $filtering == 'soft' ]] ; then
   # Keeping only the best hit of each sequence:
   echo -e "\n======== ASSIGNING TAXONOMY ========\n"
   # Using a subscript:
-  assign_taxonomy_to_NCBI_staxids.sh -b $assign_taxonomy_input -c 13 \
-=======
-
-fi
-
-if [[ $filtering == 'soft' ]] ; then
-  echo -e "\n======== ASSIGNING TAXONOMY ========\n"
   assign_taxonomy_NCBI_staxids.sh -b $assign_taxonomy_input -c 13 \
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
-  -e ~/.etetoolkit/taxa.sqlite
+  -e $etetoolkit
   mv blast_output_with_taxonomy.txt blast_filtering_results/
   sed -i '1d' blast_filtering_results/blast_output_with_taxonomy.txt
 
   echo -e "\n======== KEEPING ONLY BEST HIT PER SEQUENCE ========\n"
-<<<<<<< HEAD
   # Just keep hits with the same bitscore for each sequence, in case multiple
   # hits have the same bitscore:
   touch blast_filtering_results/blast_output_with_taxonomy_and_bitscore_filter.txt
@@ -202,7 +188,7 @@ if [[ $filtering == 'soft' ]] ; then
   done
 
   # Now we run an LCA approach, but it technically only runs if a sequence has
-  # several hits with the same best bit score
+  # several hits with the same best bit score:
   touch blast_filtering_results/blast_output_with_taxonomy_and_bitscore_filter_and_LCA_noheader.txt
   sort -u -k1,1 blast_filtering_results/blast_output_with_taxonomy_and_bitscore_filter.txt \
   | cut -f 1 | while read hit ; do
@@ -234,27 +220,6 @@ if [[ $filtering == 'soft' ]] ; then
   tmp
 
   # Sort files:
-=======
-  sort -k1,1n -k12,12nr blast_filtering_results/blast_output_with_taxonomy.txt \
-  | sort -u -k1,1 > blast_filtering_results/blast_output_with_taxonomy_sorted.txt
-
-  # Edit file format
-  cut -f1,16- blast_filtering_results/blast_output_with_taxonomy_sorted.txt \
-  > blast_filtering_results/blast_output_with_taxonomy_sorted_cut.txt
-
-  awk 'BEGIN {FS="\t"; OFS="\t"} {print $1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $2}' \
-  blast_filtering_results/blast_output_with_taxonomy_sorted_cut.txt \
-  > blast_filtering_results/blast_output_with_taxonomy_sorted_cut_reorganized.txt
-
-
-  echo -e "sequence\tsuperkingdom\tkingdom\tphylum\tsubphylum\tclass\tsubclass\torder\tsuborder\tinfraorder\tfamily\tgenus\tlowest_hit" \
-  > blast_filtering_results/blast_output_with_taxonomy_and_best_hit.txt \
-  && cat blast_filtering_results/blast_output_with_taxonomy_sorted_cut_reorganized.txt \
-  >> blast_filtering_results/blast_output_with_taxonomy_and_best_hit.txt
-
-
-  # Sort files
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
   mkdir blast_filtering_results/intermediate_files/
   mv blast_filtering_results/blast_output* blast_filtering_results/intermediate_files/
   mv blast_filtering_results/intermediate_files/blast_output_with_taxonomy_and_best_hit.txt \
@@ -262,15 +227,11 @@ if [[ $filtering == 'soft' ]] ; then
 fi
 
 if [[ $filtering == 'strict' ]] ; then
-<<<<<<< HEAD
   # Filtering reads:
   echo -e "\n======== ASSIGNING TAXONOMY ========\n"
   # Using a subscript:
-=======
-  echo -e "\n======== ASSIGNING TAXONOMY ========\n"
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
   assign_taxonomy_NCBI_staxids.sh -b $assign_taxonomy_input -c 13 \
-  -e ~/.etetoolkit/taxa.sqlite
+  -e $etetoolkit
   mv blast_output_with_taxonomy.txt blast_filtering_results/
   sed '1d' blast_filtering_results/blast_output_with_taxonomy.txt \
   > blast_filtering_results/blast_output_bitscore_filtered_with_taxonomy_noheader.txt \
@@ -279,7 +240,6 @@ if [[ $filtering == 'strict' ]] ; then
 
   echo -e "\n======== PERFORMING BITSCORE FILTER ========\n"
   # Remove all hits that are below alignment length 100 (based on BASTA) and set
-<<<<<<< HEAD
   # bitscore (default 155 based on CREST):
   awk -v x=$bitscore '($4 >= 100 && $12 >= x)' \
   blast_filtering_results/blast_output_with_taxonomy.txt \
@@ -289,16 +249,6 @@ if [[ $filtering == 'strict' ]] ; then
   touch blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter.txt
   sort -u -k1,1 blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold.txt \
   | cut -f 1 | while read hit; do
-=======
-  # bitscore (default 155 based on CREST)
-  awk -v x=$bitscore '($4 >= 100 && $12 >= x)' \
-  blast_filtering_results/blast_output_with_taxonomy.txt > blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold.txt
-
-  # Just keep hits within first set % of best bitscore for each contig
-  touch blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter.txt
-  sort -u -k1,1 blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold.txt | cut -f 1 \
-  | while read hit; do
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
     best_bitscore=$(grep "$(printf "^$hit\t")" blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold.txt \
     | sort -k1,1 -k12,12nr | sort -u -k1,1 | cut -f 12)
     echo "Processing sequence $hit with bitscore $best_bitscore"
@@ -310,10 +260,7 @@ if [[ $filtering == 'strict' ]] ; then
 
 
   echo -e "\n======== PERFORMING SIMILARITY CUTOFF ========\n"
-<<<<<<< HEAD
   # Setting certain columns to "NA" if they're below set threshold
-=======
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
   set -- $cutoff
   awk -v c1=$1 '($3 >= c1)' blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter.txt \
   > blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff.txt
@@ -337,10 +284,7 @@ if [[ $filtering == 'strict' ]] ; then
   >> blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff.txt
 
   echo -e "\n======== PERFORMING LCA APPROACH ========\n"
-<<<<<<< HEAD
   # Only keeping the taxonomy to the LCA, other ranks are set to "NA"
-=======
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
   touch blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt
   sort -u -k1,1 blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff.txt \
   | cut -f 1 | while read hit ; do
@@ -360,35 +304,22 @@ if [[ $filtering == 'strict' ]] ; then
     >> blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt
   done
 
-<<<<<<< HEAD
   # Adding header and rearranging columns:
   awk 'BEGIN {FS="\t"; OFS="\t"} {print $1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $2}' \
   blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
   > tmp
   echo -e "sequence_name\tsuperkingdom\tkingdom\tphylum\tsubphylum\tclass\tsubclass\torder\tsuborder\tinfraorder\tfamily\tgenus\tlowest_hit" \
-=======
-  # Adding header and rearranging columns
-  awk 'BEGIN {FS="\t"; OFS="\t"} {print $1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $2}' \
-  blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
-  > tmp
-  echo -e "sequence\tsuperkingdom\tkingdom\tphylum\tsubphylum\tclass\tsubclass\torder\tsuborder\tinfraorder\tfamily\tgenus\tlowest_hit" \
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
   > blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt \
   && cat tmp \
   >> blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt
   rm blast_filtering_results/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA_noheader.txt \
   tmp
 
-<<<<<<< HEAD
   # Sort files:
-=======
-  # Sort files
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
   mkdir blast_filtering_results/intermediate_files/
   mv blast_filtering_results/blast_output* blast_filtering_results/intermediate_files/
   mv blast_filtering_results/intermediate_files/blast_output_with_taxonomy_and_bitscore_threshold_and_bitscore_filter_and_pident_cutoff_and_LCA.txt \
   blast_filtering_results/
-<<<<<<< HEAD
 fi
 
 # If blast was run, remove indexed files
@@ -396,12 +327,6 @@ if [[ $format == 'fasta' ]] ; then
   rm $input.fai
 fi
 
-
-=======
-  rm $input.fai
-fi
-
->>>>>>> 4666263b4586385e646d44985c8e0d82c90d47cd
 # Display runtime
 echo -e "=================================================================\n"
 echo "SCRIPT DONE AFTER $((($(date +%s)-$start)/3600))h $(((($(date +%s)-$start)%3600)/60))m"

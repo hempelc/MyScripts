@@ -13,7 +13,7 @@ Usage:
 	-p   Use plasmidSPAdes mode of SPAdes for assembly (option --plasmid in spades). If SPAdes was disabled, use flag to indicate the input originates from plasmidSPAdes (plasmidSPADES output has a different format)
 	-k   kmer size of SPAdes (default: SPAdes default based on read length; when changing, use no whitespace between commas and only odd numbers)
 	-c   Disable --careful option of SPAdes
-	-s   Disable SPAdes and only run prokka and following steps (needs -p and -r to be specified)
+	-s   Disable SPAdes and only run prokka and following steps (needs -i and -r to be specified)
 	-i   Input for prokka (only when using -s, needs to be scaffolds output of different (plasmid)SPAdes run or comparable program with same output format (or edit file format to the one of SPAdes output); if input originates from plasmidSPAdes, additonally use -p flag)
 	-r   Prefix for prokka (only when using -s)
 	-b   Number of blast hits for diamond (default: 5)
@@ -138,7 +138,7 @@ if [[ $spades == 'true' ]]
 				else
 					echo -e "-a flag used: read error correction of SPAdes was disabled. Reads are supposed to be already error corrected by previous SPAdes run. -t flag does not have any effect."
 				fi
-		fi		
+		fi
 
 		if [[ $kmer_spades != '' ]]
 			then
@@ -166,7 +166,15 @@ else
 	fi
 fi
 
-######################### Beginning of actual pipeline ######################## 
+######################### Beginning of actual pipeline ########################
+
+# Activate the conda ete3 environment within this script to be able to run ete3.
+# I found this solution # to activate conda environments in scripts here:
+# https://github.com/conda/conda/issues/7980.
+val "$(conda shell.bash hook)" # Without this, the conda environment cannot be
+# activated within the script
+conda activate ete3 # ete3 is our conda environemnt in which we installed ete3
+
 
 # Define variables for SPAdes input and for generation of prefixes
 name1=$(echo ${R1##*/})
@@ -209,7 +217,7 @@ if [[ $spades == 'true' ]]
 							then
 								if [[ $error_correction == 'true' ]]
 									then
-										spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -k $kmer_spades -t $threads -m 50 --plasmid --careful 
+										spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -k $kmer_spades -t $threads -m 50 --plasmid --careful
 								else
 									spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -k $kmer_spades -t $threads -m 50 --plasmid --careful --only-assembler
 								fi
@@ -223,7 +231,7 @@ if [[ $spades == 'true' ]]
 					then
 						if [[ $error_correction == 'true' ]]
 							then
-								spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -k $kmer_spades -t $threads -m 50 --careful 
+								spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -k $kmer_spades -t $threads -m 50 --careful
 						else
 							spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -k $kmer_spades -t $threads -m 50 --careful --only-assembler
 						fi
@@ -239,7 +247,7 @@ if [[ $spades == 'true' ]]
 					then
 						if [[ $error_correction == 'true' ]]
 							then
-								spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -t $threads -m 50 --plasmid --careful 
+								spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -t $threads -m 50 --plasmid --careful
 						else
 							spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -t $threads -m 50 --plasmid --careful --only-assembler
 						fi
@@ -253,7 +261,7 @@ if [[ $spades == 'true' ]]
 			then
 				if [[ $error_correction == 'true' ]]
 					then
-						spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -t $threads -m 50 --careful 
+						spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -t $threads -m 50 --careful
 				else
 					spades.py -1 $spades_reads1 -2 $spades_reads2 -o spades_output -t $threads -m 50 --careful --only-assembler
 				fi
@@ -361,7 +369,7 @@ ete3 ncbiquery --info --search $(cut -f $column $mitofile) >matching_lineages.ts
 # Add taxonomic classification to blastoutput
 echo -e "\n\n~~~~~~~~~~ ADDING TAXONOMIC CLASSIFICATION ~~~~~~~~~~\n\n"
 
-LookupTaxonDetails2_UoG.py -b $mitofile -l matching_lineages.tsv -o final_output_mitochondrial_sequences_and_taxonomy.txt -t $column
+LookupTaxonDetails3.py -b $mitofile -l matching_lineages.tsv -o final_output_mitochondrial_sequences_and_taxonomy.txt -t $column
 
 
 # Display runtime
@@ -383,7 +391,7 @@ if [[ $spades == 'true' ]]
 		if [[ $trim == 'true' ]]
 			then
 				mv trimgalore_output/ mitogenome_assembly_and_taxonomic_classification_$name_prefix/
-		fi		
+		fi
 else
 	mv prokka_input_shorter_names_for_prokka.fasta final_output/
 	mkdir mitogenome_assembly_and_taxonomic_classification_$prokka_prefix/

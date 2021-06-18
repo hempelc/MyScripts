@@ -175,9 +175,9 @@ fi
 # Activate the conda ete3 environment within this script to be able to run ete3.
 # I found this solution # to activate conda environments in scripts here:
 # https://github.com/conda/conda/issues/7980.
-#val "$(conda shell.bash hook)" # Without this, the conda environment cannot be
+val "$(conda shell.bash hook)" # Without this, the conda environment cannot be
 # activated within the script
-#conda activate ete3 # ete3 is our conda environemnt in which we installed ete3
+conda activate ete3 # ete3 is our conda environemnt in which we installed ete3
 
 
 # Define variables for SPAdes input and for generation of prefixes

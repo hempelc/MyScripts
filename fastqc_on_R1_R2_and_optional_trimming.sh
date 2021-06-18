@@ -2,6 +2,9 @@
 
 # Version 0.2, made on 27 Aug 2020 by Chris Hempel (hempelc@uoguelph.ca)
 
+# TO DO: names for paired reads from trimmomatic (1P and 2P) share same name
+# even if raw files were called *_R1_* and *_R2_*
+
 # Takes R1 and R2 reads, performs FastQC on the raw reads, then, if specified,
 # trims them using Trimmomatic with a list of PHRED scores and performs FastQC
 # on all trimmed read sets

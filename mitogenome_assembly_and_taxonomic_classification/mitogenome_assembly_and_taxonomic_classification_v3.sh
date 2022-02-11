@@ -1,6 +1,10 @@
 #!/bin/bash
 
 # Version v3, flag -d for diamond database added, script structure improved
+# Needs ete3 conda env activated
+# Needs prokka singularity file downlaoded and in PATH (prokka.sif)
+# Note: --notbl2asn option must be manually added to prokka script, see https://github.com/tseemann/prokka/issues/246
+
 
 usage="$(basename "$0") -d <diamond_nr_database_location> [-1 <R1.fastq.gz> -2 <R2.fastq.gz>] [-b <n>] [-k <n,n,n...>] [-i <FILE.fasta>] [-r <PREFIX>] [-tapcshT] -- Script to assemble scaffolds out of a read set using SPAdes followed by prokka to annotate scaffolds, diamond to blast the annotated proteins, extraction of all mitochondrial scaffolds and addition of taxonomic classification.
 
@@ -291,9 +295,11 @@ echo -e "\n\n~~~~~~~~~~ RUNNING PROKKA ~~~~~~~~~~\n\n"
 if [[ $spades == 'true' ]]
 	then
 		prokka_input="./spades_output/scaffolds_shorter_names_for_prokka.fasta"
-		prokka --notbl2asn --cpus $threads --outdir prokka_output --prefix prokka_$name_prefix $prokka_input
+		#prokka.sif prokka --notbl2asn --cpus $threads --outdir prokka_output --prefix prokka_$name_prefix $prokka_input
+    		prokka.sif prokka --cpus $threads --outdir prokka_output --prefix prokka_$name_prefix $prokka_input
 else
-	prokka --notbl2asn --cpus $threads --outdir prokka_output --prefix $prokka_prefix prokka_input_shorter_names_for_prokka.fasta
+	#prokka.sif prokka --notbl2asn --cpus $threads --outdir prokka_output --prefix $prokka_prefix prokka_input_shorter_names_for_prokka.fasta
+  prokka.sif prokka --cpus $threads --outdir prokka_output --prefix $prokka_prefix prokka_input_shorter_names_for_prokka.fasta
 fi
 
 
@@ -327,6 +333,7 @@ grep mitoch* node_seqid_diamond_output.txt > node_seqid_diamond_output_mitochond
 
 
 # Get scaffolds length and coverage
+# TO DO: adapt so that not done for non-spades assemblers
 if [[ $spades == 'true' ]]
 	then
 		sequences="./spades_output/scaffolds.fasta"

@@ -6,10 +6,6 @@ A script to filter BLAST hits with assigned taxonomy.
 By Chris Hempel (christopher.hempel@kaust.edu.sa) on 20 Jan 2022
 """
 
-
-# Written by Chris Hempel (hempelc@uoguelph.ca) on 20 Jan 2022
-# A script to filter blast hits with assigned taxonomy
-
 import datetime
 import pandas as pd
 import argparse
@@ -111,6 +107,18 @@ parser.add_argument(
     ),
 )
 parser.add_argument(
+    "-i",
+    "--keep_pident",
+    choices=["yes", "no"],
+    default="no",
+    type=str,
+    help=(
+        "Flag to keep percentage identity information for filtered taxa. "
+        "If yes, percentage identify is kept (for OTUs with identical taxa "
+        " matches, the max percentage identity value is kept) (default=no)."
+    ),
+)
+parser.add_argument(
     "-o", "--out", default="blast_filtered.txt", type=str, help="Name of output file."
 )
 args = parser.parse_args()
@@ -122,6 +130,7 @@ percentage = args.percentage / 100
 length = args.length
 bitscore_threshold = args.bitscore
 cutoff = args.cutoff
+keep_pident = args.keep_pident
 out = args.out
 
 # Define ranks to use
@@ -132,8 +141,14 @@ req_cols = ["qseqid", "pident", "length", "bitscore"] + ranks
 # Only read in columns we need
 time_print("Reading in file...")
 df = pd.read_csv(
-    file, usecols=req_cols, dtype={"qseqid": str, "bitscore": float, "pident": float}
+    file,
+    index_col=False,
+    usecols=req_cols,
+    dtype={"qseqid": str, "bitscore": float, "pident": float},
 ).fillna("NA")
+
+# Drop rows containing "Unknown" = taxid could not be translated
+df = df[~df[ranks].apply(lambda row: row.str.contains("Unknown")).any(axis=1)]
 
 if filter_mode == "soft":
     time_print(
@@ -163,22 +178,36 @@ elif filter_mode == "strict":
     df.loc[df["pident"] < cutoff[5], ["phylum", "subphylum"]] = "NA"
 
 # Keep only relevant columns and put species to last column
-df = df[["qseqid"] + ranks]
+df_tax = df[["qseqid"] + ranks]
 
-
-## Make a df mask: group df by contigs, check if rank has more than one taxon, and if yes, True, else False
+## Make a df mask: group dfs, check if ranks have more than one taxon, and if yes, True, else False
 time_print("Performing LCA filter...")
-lca_mask = df.groupby(["qseqid"]).transform(lambda x: len(set(x)) != 1)
+lca_mask = df_tax.groupby(["qseqid"]).transform(lambda x: len(set(x)) != 1)
 
 ## Replace ranks in df with "NA" based on mask
-df.mask(lca_mask, "NA", inplace=True)
+df_tax = df_tax.mask(lca_mask, "NA")
 
-## Drop duplicate rows == aggregate contig info
-df.drop_duplicates(inplace=True)
+# Add qseqid info
+df_tax["qseqid"] = df["qseqid"]
 
+if keep_pident == "yes":
+    # Add pident info
+    df_tax["pident"] = df["pident"]
+
+## Drop duplicate rows == aggregate taxonomic info
+df = df_tax.drop_duplicates()
+
+if keep_pident == "yes":
+    # Per OTU and identical taxon match, keep the max pident
+    idx_pident = df.groupby(["qseqid"] + ranks)["pident"].transform(max) == df["pident"]
+    df = df[idx_pident]
+    df.rename(columns={"pident": "percentage_similarity"})
 
 # Change column name and save df
-df.rename(columns={"species": "species", "qseqid": "sequence_name"}, inplace=True)
-df.to_csv(out, index=False)
+df = df.rename(columns={"qseqid": "sequence_name"})
+df.to_csv(
+    "/Users/christopherhempel/Desktop/blast-sofyotus-ncbi_coi_downloads_with_taxonomy_and_pident_filtered",
+    index=False,
+)
 
 time_print("Filtering done.")

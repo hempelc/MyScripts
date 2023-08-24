@@ -201,7 +201,7 @@ if keep_pident == "yes":
     # Per OTU and identical taxon match, keep the max pident
     idx_pident = df.groupby(["qseqid"] + ranks)["pident"].transform(max) == df["pident"]
     df = df[idx_pident]
-    df.rename(columns={"pident": "percentage_similarity"})
+    df = df.rename(columns={"pident": "percentage_similarity"})
 
 # Change column name and save df
 df = df.rename(columns={"qseqid": "sequence_name"})

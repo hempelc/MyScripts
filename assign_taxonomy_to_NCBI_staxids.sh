@@ -71,6 +71,6 @@ sed -i '1!{/^#/d;}' matching_lineages.tsv
 LookupTaxonDetails3.py -b $blast_file -l matching_lineages.tsv \
 	-o $blast_file_out -t $column -e $etetoolkit
 echo 'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxid lowest_rank lowest_hit superkingdom kingdom phylum subphylum class subclass order suborder infraorder family genus' |
-	sed -e 's/ /\t/g' | cat - $blast_file_out >temp2 && mv temp2 $blast_file_out
+	sed -e 's/ /\t/g' | cat - $blast_file_out >tmp2 && mv tmp2 $blast_file_out
 
 rm matching_lineages.tsv tmp*

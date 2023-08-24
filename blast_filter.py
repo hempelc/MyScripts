@@ -205,9 +205,6 @@ if keep_pident == "yes":
 
 # Change column name and save df
 df = df.rename(columns={"qseqid": "sequence_name"})
-df.to_csv(
-    "/Users/christopherhempel/Desktop/blast-sofyotus-ncbi_coi_downloads_with_taxonomy_and_pident_filtered",
-    index=False,
-)
+df.to_csv(out, index=False)
 
 time_print("Filtering done.")

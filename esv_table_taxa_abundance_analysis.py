@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 # Options
-file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_97_apscale/rsde-coi-water-otu_97_apscale_OTU_table_with_BOLDigger_coil_filtered.xlsx"
+file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_97_apscale/rsde-coi-water-otu_97_apscale_ESV_table_with_BOLDigger_coil_filtered.xlsx"
 # Is the file from Boldigger?
 boldigger = True
 # Gibve tha dataset a name for plotting title
@@ -59,13 +59,14 @@ for rank in ranks:
     fig.update_layout(showlegend=False)
     fig.show()
 
-# Plot resolution (requires columsn lowest_rank in df)
-resolution_df = df["lowest_rank"].fillna("No match").value_counts()
-resolution_df = resolution_df.reindex(ranks + ["No match"])
+# Plot resolution as proportion of ranks among all OTUs/ESVs (requires column lowest_rank in df)
+resolution_df = df["lowest_rank"].fillna("No match").value_counts() / len(df) * 100
+resolution_df = resolution_df.reindex(ranks + ["No match"]).round(1)
 fig = px.bar(
     resolution_df,
-    labels={"value": "Count", "lowest_rank": "Rank"},
+    labels={"value": "Proportion", "lowest_rank": "Rank"},
     title="Taxonomic resolution",
 )
+fig.update_yaxes(range=[0, 100])
 fig.update_layout(showlegend=False)
 fig.show()

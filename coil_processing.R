@@ -10,10 +10,12 @@ library(coil)
 
 # Options
 ## Give path to ESV table with BOLDigger taxonomy
-esv_file = "/Users/christopherhempel/Desktop/BLAST_ESVs.xlsx"
+esv_file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_97_apscale/rsde-coi-water-otu_97_apscale_ESV_table_with_BOLDigger.xlsx"
 ## If you want to visually inspect sequences flagged by coil, set this to FALSE
 # Otherwise, if TRUE, flagged seqs will be dropped automatically
 auto_drop = TRUE
+# ESVs or OTUs?
+unit="ESV"
 
 # Read in df
 df <- read_excel(esv_file)
@@ -114,7 +116,7 @@ concatenated_df <- bind_rows(df_with_coil, df_unreliable)
 
 # Sort df by ID names
 concatenated_df <- concatenated_df %>%
-  arrange(as.numeric(gsub("OTU_", "", ID)))
+  arrange(as.numeric(gsub(paste0(unit, "_"), "", ID)))
 
 if (auto_drop) {
   # Set outfile name

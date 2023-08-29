@@ -10,13 +10,22 @@ library(coil)
 
 # Options
 ## Give path to ESV table with BOLDigger taxonomy
-esv_file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_98_apscale/rsde-coi-water-otu_98_apscale_OTU_table_with_BOLDigger.xlsx"
+esv_file = "/Users/christopherhempel/Desktop/BLAST_ESVs.xlsx"
 ## If you want to visually inspect sequences flagged by coil, set this to FALSE
 # Otherwise, if TRUE, flagged seqs will be dropped automatically
 auto_drop = TRUE
 
 # Read in df
 df <- read_excel(esv_file)
+
+# Fix capitalization issue of ranks if ranks are not capitalized
+if ("phylum" %in% colnames(df)) {
+  # Code to execute when ranks are capitalized
+  colnames(df)[colnames(df) == "phylum"] <- "Phylum"
+  colnames(df)[colnames(df) == "class"] <- "Class"
+  colnames(df)[colnames(df) == "order"] <- "Order"
+  colnames(df)[colnames(df) == "family"] <- "Family"
+}
 
 # Function to identify the genetic code of the lowest rank that is recognized by coil's function which_translate_table
 genetic_code_lowest_rank <- function(row) {

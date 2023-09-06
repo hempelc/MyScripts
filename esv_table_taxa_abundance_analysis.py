@@ -42,6 +42,8 @@ for rank in ranks:
         .sum()
         .sort_values(["readsum"], ascending=False)[:num_taxa_barplots]
     )
+    # Turn to proportions
+    grouped_df = grouped_df / grouped_df.sum()
 
     ## Define title
     if len(grouped_df) >= num_taxa_barplots:
@@ -52,11 +54,12 @@ for rank in ranks:
     ## Plot
     fig = px.bar(
         grouped_df,
-        labels={"value": "Number of reads", rank: "Taxa"},
+        labels={"value": "Number of reads [%]", rank: "Taxa"},
         title=barplot_title,
         width=graph_width,
     )
     fig.update_layout(showlegend=False)
+    fig.update_yaxes(range=[0, 0.25])
     fig.show()
 
 # Plot resolution as proportion of ranks among all OTUs/ESVs (requires column lowest_rank in df)
@@ -64,7 +67,7 @@ resolution_df = df["lowest_rank"].fillna("No match").value_counts() / len(df) * 
 resolution_df = resolution_df.reindex(ranks + ["No match"]).round(1)
 fig = px.bar(
     resolution_df,
-    labels={"value": "Proportion", "lowest_rank": "Rank"},
+    labels={"value": "Proportion [%]", "lowest_rank": "Rank"},
     title="Taxonomic resolution",
 )
 fig.update_yaxes(range=[0, 100])

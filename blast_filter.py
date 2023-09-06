@@ -27,6 +27,11 @@ def bitscore_cutoff(x):
     return x[x >= min_bitscore]
 
 
+# Define a custom argument type for a list of strings
+def list_of_strings(arg):
+    return arg.split(",")
+
+
 # Define a class to format helptext of options properly, taken from
 # https://www.google.com/search?q=argsparse+recognize+newline+in+help&oq=argsparse+
 # recognize+newline+in+help&aqs=chrome..69i57j33i22i29i30.12450j0j7&sourceid=chrome&ie=UTF-8
@@ -107,6 +112,17 @@ parser.add_argument(
     ),
 )
 parser.add_argument(
+    "-r",
+    "--ranks",
+    metavar="ranks",
+    default=["superkingdom", "phylum", "class", "order", "family", "genus", "species"],
+    type=list_of_strings,
+    help=(
+        "Ranks included in taxonomy. Must match all taxonomy headers. Ranks must be one strign separated by commas (no spaces)"
+        "(default=superkingdom,phylum,class,order,family,genus,species)."
+    ),
+)
+parser.add_argument(
     "-i",
     "--keep_pident",
     choices=["yes", "no"],
@@ -132,9 +148,8 @@ bitscore_threshold = args.bitscore
 cutoff = args.cutoff
 keep_pident = args.keep_pident
 out = args.out
+ranks = args.ranks
 
-# Define ranks to use
-ranks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"]
 # Define which columns to load in
 req_cols = ["qseqid", "pident", "length", "bitscore"] + ranks
 

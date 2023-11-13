@@ -69,11 +69,11 @@ parser.add_argument(
 parser.add_argument(
     "-p",
     "--percentage",
-    default=2,
-    type=int,
+    default=2.0,
+    type=float,
     help=(
         "Percentage threshold to perform bitscore filtering on when choosing "
-        'filter_mode option "strict" (default=2).'
+        'filter_mode option "strict" (default=2.0).'
     ),
 )
 parser.add_argument(

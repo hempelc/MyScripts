@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-BOLDigger_file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_98_apscale/boldigger_OTUs/BOLDResults_rsde-coi-water-otu_98_apscale_OTUs_filtered_part_1.xlsx"
+BOLDigger_file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_97_apscale/boldigger_ESVs/BOLDResults_rsde-coi-water-otu_98_apscale_ESVs_filtered_part_1.xlsx"
 ranks = ["Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
 

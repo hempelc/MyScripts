@@ -1,44 +1,66 @@
 # Script to identify indels and stop codons in COI sequences using coil
-# Requires an ESV table in .xlsx with BOLDigger taxonomy results
+# Requires an ESV or OTU table with BOLDigger taxonomy results
 # Note: the script leaves non-animal sequences untouched, only animal sequences are checked
 
+# Define a list of required libraries
+required_libraries <- c("seqinr", "readxl", "openxlsx", "dplyr", "coil", "tools")
+
+# Check if libraries are installed, if not, install them
+for (lib in required_libraries) {
+  if (!requireNamespace(lib, quietly = TRUE)) {
+    message(paste("The required R package", lib, "is not installed. Installing now. This can take a while..."))
+    chooseCRANmirror(ind=1)
+    install.packages(lib, dependencies = TRUE)
+  }
+}
+
+# Load required libraries
 library(seqinr)
 library(readxl)
 library(openxlsx)
 library(dplyr)
 library(coil)
+library(tools)
 
 # Options
-## Give path to ESV table with BOLDigger taxonomy
-esv_file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_97_apscale/rsde-coi-water-otu_97_apscale_ESV_table_with_BOLDigger.xlsx"
+## Give path to ESV or OTU table with taxonomy
+file = '/Users/simplexdna/Desktop/spongebob-coi_apscale_ESV_table_filtered_microdecon-filtered_with_taxonomy.csv'
 ## If you want to visually inspect sequences flagged by coil, set this to FALSE
 # Otherwise, if TRUE, flagged seqs will be dropped automatically
 auto_drop = TRUE
-# ESVs or OTUs?
+# ESV or OTU?
 unit="ESV"
 
-# Read in df
-df <- read_excel(esv_file)
-
-# Fix capitalization issue of ranks if ranks are not capitalized
-if ("phylum" %in% colnames(df)) {
-  # Code to execute when ranks are capitalized
-  colnames(df)[colnames(df) == "phylum"] <- "Phylum"
-  colnames(df)[colnames(df) == "class"] <- "Class"
-  colnames(df)[colnames(df) == "order"] <- "Order"
-  colnames(df)[colnames(df) == "family"] <- "Family"
+# Import data
+fileformat <- file_ext(file)
+if (fileformat=="xlsx") {
+  df <- as.data.frame(read_excel(file))
+  rownames(df) <- df[, 1]
+  df <- df[, -1]
+} else if (fileformat=="csv") {
+  df <- read.csv(file)
+} else {
+  print("File format must be xlsx or csv.")
 }
+
 
 # Function to identify the genetic code of the lowest rank that is recognized by coil's function which_translate_table
 genetic_code_lowest_rank <- function(row) {
+  exceptions <- c("Taxonomy unreliable - multiple matching taxa",
+                "Taxonomy unreliable - percentage similarity threshold for rank not met",
+                "Taxonomy unreliable - bitscore and alignment length threshold not met",
+                "Taxonomy unreliable",
+                "No match in database",
+                "Unknown in PR2 database",
+                "Unknown in BOLD database")
   result <- "Not identifiable"
   for (col in rev(names(row))) {
     value <- row[[col]]
     if (is.na(value)) {
       next  # Skip processing if value is NA
     }
-    if (value=="No Match") {
-      break  # Skip processing if value is NA
+    if (value  %in% exceptions) {
+      next  # Skip processing if value is No Match
     }
     tryCatch({
       result <- which_trans_table(value)
@@ -54,15 +76,15 @@ genetic_code_lowest_rank <- function(row) {
   return(result)
 }
 
-# Apply the process_row function to each row of the dataframe
-df$genetic_code <- apply(df[c("Phylum", "Class", "Order", "Family")], 1, genetic_code_lowest_rank)
+# Apply the process_row function to each allowed rank of the dataframe
+df$genetic_code <- apply(df[c("phylum", "class", "order", "family")], 1, genetic_code_lowest_rank)
 
 # Create flag if coil can't process sequence (= not reliable)
 # (likely because it's no animal sequenced due to no genetic code being found)
 df <- df %>%
   mutate(not_reliable = genetic_code == "Not identifiable")
 
-# Turn unidentifiable genetic codes 
+# Mutate unidentifiable genetic codes 
 df <- df %>%
   mutate(genetic_code = ifelse(genetic_code == "Not identifiable", 0, genetic_code))
 
@@ -84,7 +106,7 @@ aa_end = 218
 meta_nt_phmm = subsetPHMM(nt_coi_PHMM, start = nt_start, end = nt_end)
 meta_aa_phmm = subsetPHMM(aa_coi_PHMM, start = aa_start, end = aa_end)
 
-# TO DO CUT DOWN DF
+# TO DO: CUT DOWN DF TO SAVE SPACE
 df_reliable = df[!df$not_reliable, ]
 df_unreliable = df[df$not_reliable, ]
 
@@ -120,7 +142,7 @@ concatenated_df <- concatenated_df %>%
 
 if (auto_drop) {
   # Set outfile name
-  outfile <- sub("\\.xlsx$", "_coil_filtered.xlsx", esv_file)
+  outfile <- sub(paste0("\\.", fileformat, "$"), "_coil_filtered.xlsx", file)
     # Drop rows that are flagged
   num_dropped = sum(!is.na(concatenated_df$coil_flag))
   paste("Dropping", num_dropped, "flagged sequences.")
@@ -130,7 +152,7 @@ if (auto_drop) {
   write.xlsx(concatenated_df, file = outfile)
 } else {
   # Set outfile name
-  outfile <- sub("\\.xlsx$", "_with_coilflag.xlsx", esv_file)
+  outfile <- sub(paste0("\\.", fileformat, "$"), "_with_coilflag.xlsx", file)
   # Cut down df
   concatenated_df = select(concatenated_df, -genetic_code:-stop_codons)
   # Write the df to an Excel file and highlight flagged sequences in red

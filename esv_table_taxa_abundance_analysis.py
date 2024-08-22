@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 # Options
-file = "/Users/christopherhempel/Desktop/RSDE COI water project/apscale/rsde-coi-water-otu_97_apscale/rsde-coi-water-otu_97_apscale_ESV_table_with_BOLDigger_coil_filtered.xlsx"
+file = "/Users/christopherhempel/Desktop/RSDE COI water project/second_run_with_dnoise_swarm/rsde-coi-water_final-OTU-table_coil-filtered.xlsx"
 # Is the file from Boldigger?
 boldigger = True
 # Gibve tha dataset a name for plotting title
@@ -25,6 +25,7 @@ df = pd.read_excel(file) if ".xlsx" in file else pd.read_csv(file)
 
 # Select sample columns
 sample_cols = [col for col in df.columns if sample_abbrev in col]
+
 # Calculate number of reads across samples
 readsums = df[sample_cols].sum(axis=1)
 
@@ -59,7 +60,6 @@ for rank in ranks:
         width=graph_width,
     )
     fig.update_layout(showlegend=False)
-    fig.update_yaxes(range=[0, 0.25])
     fig.show()
 
 # Plot resolution as proportion of ranks among all OTUs/ESVs (requires column lowest_rank in df)

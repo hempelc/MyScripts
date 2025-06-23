@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Script to concatenate 2 fastq files (such as Undetermined reads and Undetermined index)
+# Script to concatenate 2 fastq OR fastq.gz files (such as Undetermined reads and Undetermined index)
 # The fastq lines from file 2 will be added to the end of the fastq lines from file 1
 
 import sys

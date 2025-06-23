@@ -19,13 +19,14 @@ fi
 # Trap function to ensure deactivation and clean-up on exit
 function cleanup {
   echo "Cleaning up and deactivating environment..."
-  mamba deactivate
+  conda deactivate
 }
 trap cleanup EXIT
 
 # Activate environment
 echo "Activating environment '$env_name'..."
-mamba activate "$env_name" || { echo "Failed to activate environment"; exit 1; }
+eval "$(conda shell.bash hook)"
+conda activate "$env_name" || { echo "Failed to activate environment"; exit 1; }
 
 # Run FastQC
 echo "Running FastQC on files in '$input_dir'..."
